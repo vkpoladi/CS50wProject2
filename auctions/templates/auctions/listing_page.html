@@ -1,0 +1,35 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h1>Listing: {{ listing.title }}</h1>
+
+    <div>
+        {% if listing.image_url %}
+        <img src={{ listing.image_url }} alt="invalid url">
+        {% endif %}
+    </div>
+
+    <div>
+        {{ listing.description }}
+    </div>
+
+    <div>
+        {{ listing.starting_bid_price }}
+    </div>
+
+    <div>
+        <h3>Details</h3>
+        <ul>
+            <li> Listed by: {{ listing.username }}</li>
+            <li> Posted on: {{ listing.post_date }}</li>
+            <li> Category : {% if category %} {{ listing.category }} {% else %} No Category Listed {% endif %}</li>
+            <li> Status: {{ listing.status }}</li>
+        </ul>
+
+    </div>
+
+
+
+
+
+{% endblock %}

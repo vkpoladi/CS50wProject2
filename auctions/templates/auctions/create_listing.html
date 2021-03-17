@@ -1,0 +1,49 @@
+{% extends "auctions/layout.html" %}
+
+{% block body%}
+    <h1>Create A New Listing</h1>
+
+    <form action= "{% url 'create_listing' %}", method="POST">
+        {% csrf_token %}
+
+        <div>
+            <label> Title </label>
+            <input type="text", name="title">
+        </div>
+
+        <div>
+            <label> Description (max 500 characters) </label>
+            <input type="textarea", name="description">
+        </div>
+
+        <div>
+            <label> Image URL </label>
+            <input type="url", name="image_url">
+        </div>
+
+        <div>
+            <label> Starting Bid Price $</label>
+            <input type="number", name="starting_bid_price", value="0">
+            <h10>Max: $99,999,999.99; Two decimal places required.</h5>
+        </div>
+
+        <div>
+            <label> Category </label>
+            <select name="category">
+                {% for listing in listings %} 
+                    <option value="{{ listing.category }}"> {{ listing.category }} </option> 
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <input type="submit">
+        </div>
+
+    </form>
+
+    {% if message %}
+        {{ message }}
+    {% endif %}
+
+{% endblock%}
