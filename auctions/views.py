@@ -3,12 +3,17 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django import forms
 
-from .models import User
+import datetime
+
+from .models import User, listing, bid, comment
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    return render(request, "auctions/index.html", {
+        "listings":listing.objects.all()
+    })
 
 
 def login_view(request):
@@ -61,3 +66,45 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+def create_listing(request):
+    if request.method == "POST":
+        
+        user = request.user
+
+        username = user.username
+        title = request.POST["title"]
+        description = request.POST["description"]
+        image_url = request.POST["image_url"]
+        
+        starting_bid_price = request.POST["starting_bid_price"]
+
+        #Error checking for starting bid price
+        if starting_bid_price == "":
+            starting_bid_price = 0
+        else:
+            starting_bid_price = (float) (request.POST["starting_bid_price"])
+        
+        if starting_bid_price >= 100000000 or starting_bid_price < 0:
+            return render(request, "auctions/create_listing.html", {
+                "listings": listing.objects.all(),
+                "message": "Invalid starting bid price"
+            })
+
+        post_date = datetime.datetime.now()
+        category = request.POST["category"]
+        status = "open"
+
+        new_listing = listing(username=username, title=title, description=description, image_url=image_url, starting_bid_price=starting_bid_price, post_date=post_date, category=category, status=status)
+        new_listing.save()
+
+        return HttpResponseRedirect(reverse("index"))
+    else:
+        return render(request, "auctions/create_listing.html", {
+            "listings": listing.objects.all()
+        })
+
+def listing_page(request, listing_pk):
+    return render(request, "auctions/listing_page.html", {
+        "listing": listing.objects.get(pk=listing_pk)
+    })
