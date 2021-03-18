@@ -25,7 +25,7 @@ class listing(models.Model):
     def __str__(self):
         return f"Title: {self.title}    Description:{self.description}"
 
-class bid(models.Model):
+class bid_entry(models.Model):
     #Autofield is primary key by default and auto-increments
     listing = models.ForeignKey(listing, on_delete=models.CASCADE, related_name="bids")
     bid_date = models.DateTimeField()

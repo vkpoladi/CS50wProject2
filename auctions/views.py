@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 
 import datetime
 
-from .models import User, listing, bid, comment, watchlist_entries
+from .models import User, listing, comment, watchlist_entries, bid_entry
 
 
 def index(request):
@@ -110,13 +110,33 @@ def create_listing(request):
 
 def listing_page(request, listing_pk):
     listing_entry = listing.objects.get(pk=listing_pk)
+    
     #listing_category = listing_entry.category
     #if listing_category == "None":
     #    listing_category = "No Category Listed"
 
+    #Find current max bid price if it exists
+    #current_bids = bid.objects.filter(listing=listing_entry)
+
+    current_bids = listing_entry.bids.all()
+    current_bid_price = 0.00
+    current_bid = None
+
+    for bid in current_bids:
+        if bid.bid_price > current_bid_price:
+            current_bid_price = bid.bid_price
+            current_bid = bid 
+
+    if current_bid != None:
+        current_bid_message = f"Current leading bid is {current_bid_price} by {current_bid.username}"
+    else:
+        current_bid_message = ""
+
     return render(request, "auctions/listing_page.html", {
-        "listing": listing_entry
+        "listing": listing_entry,
+        "current_bid_message": current_bid_message 
         #"category": listing_category
+
     })
 
 
@@ -126,10 +146,14 @@ def watchlist(request):
         w_username = request.user.username
         watchlist_entry = watchlist_entries(w_listing=w_listing, w_username=w_username)
         watchlist_entry.save()
+        
+        #listing_entry = listing.objects.get(pk=w_listing)
 
-        return render(request, "auctions/listing_page.html", {
-            "listing": listing.objects.get(pk=w_listing)
-        })
+        return HttpResponseRedirect(reverse("listing_page", args=(w_listing,)))
+
+        #return render(request, "auctions/listing_page.html", {
+        #    "listing": listing.objects.get(pk=w_listing)
+        #})
 
     else:
         listings = []
@@ -160,4 +184,71 @@ def watchlist_remove(request):
     watchlist_entries.objects.filter(w_listing=r_listing_pk).delete()
     return HttpResponseRedirect(reverse("watchlist"))
 
+def bidding(request):
+    bid_price = request.POST["bid_amount"]
+    listing_title = request.POST["bid_listing"]
+
+    listing_entry = listing.objects.get(title=listing_title)
+
+    listing_pk = listing_entry.pk
+    username = request.user.username
+    bid_date = datetime.datetime.now()
+    starting_bid_price = listing_entry.starting_bid_price
+    
+    #current_bids = bid.objects.filter(listing=listing)
+    current_bids = listing_entry.bids.all()
+    current_bid_price = 0.00
+    current_bid = None
+
+    for bid in current_bids:
+        if bid.bid_price > current_bid_price:
+            current_bid_price = bid.bid_price
+            current_bid = bid
+
+    if bid_price == "":
+        bid_price = 0.00
+    else:
+        bid_price = (float) (request.POST["bid_amount"])
+
+
+    if current_bid != None:
+        current_bid_message = f"Current leading bid is {current_bid_price} by {current_bid.username}"
+    else:
+        current_bid_message = ""
+
+    #Error checking for new bid price submission
+
+    if bid_price >= 100000000 or bid_price < 0:
+        return render(request, "auctions/listing_page.html", {
+            "listing": listing.objects.get(pk=listing_entry.pk),
+            "current_bid_message": current_bid_message,
+            "message": "Bid price is outside of valid range. Please try again."
+        })    
+
+    if current_bid != None and bid_price <= current_bid_price:
+        return render(request, "auctions/listing_page.html", {
+            "listing": listing.objects.get(pk=listing_entry.pk),
+            "current_bid_message": current_bid_message,
+            "message": f"Bid price must be higher than current leading bid price of {current_bid_price}. Please try again."
+        })
+
+    if bid_price < starting_bid_price:
+        return render(request, "auctions/listing_page.html", {
+            "listing": listing.objects.get(pk=listing_entry.pk),
+            "current_bid_message": current_bid_message,
+            "message": "Bid price must be at minimum the starting bid price. Please try again."
+        })
+       
+    #If passed error checking, process new bid request
+    new_bid = bid_entry(listing=listing_entry, username=username, bid_date=bid_date, bid_price=bid_price)
+    new_bid.save()
+
+    current_bid_message = f"Current leading bid is {bid_price} by {username}"
+
+    return render(request, "auctions/listing_page.html", {
+        "listing": listing.objects.get(pk=listing_pk),
+        "current_bid_message": current_bid_message,
+        "message": "Bid successfully placed."
+    }) 
+    
 

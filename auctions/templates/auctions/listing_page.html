@@ -14,7 +14,10 @@
     </div>
 
     <div>
-        {{ listing.starting_bid_price }}
+        Starting Bid: {{ listing.starting_bid_price }}
+
+        {{ current_bid_message }}
+
     </div>
 
     <div>
@@ -33,6 +36,23 @@
             <input type="hidden" name="add_listing" value={{ listing.pk }}>
             <input type="submit" name="add_to_watchlist" value="Add to Watchlist">
         </form>
+    </div>
+
+    <div>
+        <form action="{% url 'bidding' %}", method="POST">
+            {% csrf_token %}
+            <label>Bid</label>
+            <input type="number" name="bid_amount" min="0" max="99999999.99" value="0">
+            <input type="hidden" name="bid_listing" value="{{ listing.title }}">
+            <input type="submit">
+            <h10>Max: $99,999,999.99; Two decimal places required.</h10>
+        </form>
+    </div>
+
+    <div>
+        {% if message %}
+            {{ message }}
+        {% endif %}
     </div>
 
 
