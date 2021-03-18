@@ -7,7 +7,7 @@ from django import forms
 
 import datetime
 
-from .models import User, listing, bid, comment
+from .models import User, listing, bid, comment, watchlist_entries
 
 
 def index(request):
@@ -92,7 +92,7 @@ def create_listing(request):
             })
 
         post_date = datetime.datetime.now()
-        category = request.POST["category"]
+        category = request.POST.get("category","")
         status = "open"
 
         new_listing = listing(username=username, title=title, description=description, image_url=image_url, starting_bid_price=starting_bid_price, post_date=post_date, category=category, status=status)
@@ -108,3 +108,38 @@ def listing_page(request, listing_pk):
     return render(request, "auctions/listing_page.html", {
         "listing": listing.objects.get(pk=listing_pk)
     })
+
+def watchlist(request):
+    if request.method == "POST":
+        w_listing = request.POST["add_listing"]
+        w_username = request.user.username
+        watchlist_entry = watchlist_entries(w_listing=w_listing, w_username=w_username)
+        watchlist_entry.save()
+
+        return render(request, "auctions/listing_page.html", {
+            "listing": listing.objects.get(pk=w_listing)
+        })
+
+    else:
+        listings = []
+        w_username = request.user.username
+
+        try:
+            w_listings = watchlist_entries.objects.filter(w_username=w_username)
+
+            for w_listing in w_listings:
+                listings.append(listing.objects.get(pk=w_listing.w_listing))
+
+            return render(request, "auctions/watchlist.html", {
+                "username":w_username,
+                "listings":listings
+            })
+
+        except watchlist_entries.DoesNotExist:
+            return render(request, "auctions/watchlist.html", {
+            "username":w_username,
+            "message":"No listings in watchlist"
+            })
+
+
+

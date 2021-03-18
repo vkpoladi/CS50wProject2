@@ -46,5 +46,13 @@ class comment(models.Model):
     def __str__(self):
         return f"{self.username} commented on {self.listing} on {self.comment_date}"
 
+class watchlist_entries(models.Model):
+    #Autofield is primary key by default and auto-increments
+    w_listing = models.IntegerField()
+    w_username = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"Listing {self.w_listing} is on {self.w_username}'s watchlist"
+
 
     

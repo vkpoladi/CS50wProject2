@@ -25,7 +25,14 @@
             <li> Category : {% if category %} {{ listing.category }} {% else %} No Category Listed {% endif %}</li>
             <li> Status: {{ listing.status }}</li>
         </ul>
+    </div>
 
+    <div>
+        <form action="{% url 'watchlist' %}", method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="add_listing" value={{ listing.pk }}>
+            <input type="submit" name="add_to_watchlist" value="Add to Watchlist">
+        </form>
     </div>
 
 
