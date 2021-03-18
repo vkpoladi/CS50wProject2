@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
+from django.contrib.auth.decorators import login_required
 
 import datetime
 
@@ -67,6 +68,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+
 def create_listing(request):
     if request.method == "POST":
         
@@ -92,7 +94,9 @@ def create_listing(request):
             })
 
         post_date = datetime.datetime.now()
+
         category = request.POST.get("category","")
+
         status = "open"
 
         new_listing = listing(username=username, title=title, description=description, image_url=image_url, starting_bid_price=starting_bid_price, post_date=post_date, category=category, status=status)
@@ -105,9 +109,16 @@ def create_listing(request):
         })
 
 def listing_page(request, listing_pk):
+    listing_entry = listing.objects.get(pk=listing_pk)
+    #listing_category = listing_entry.category
+    #if listing_category == "None":
+    #    listing_category = "No Category Listed"
+
     return render(request, "auctions/listing_page.html", {
-        "listing": listing.objects.get(pk=listing_pk)
+        "listing": listing_entry
+        #"category": listing_category
     })
+
 
 def watchlist(request):
     if request.method == "POST":
@@ -141,5 +152,12 @@ def watchlist(request):
             "message":"No listings in watchlist"
             })
 
+
+def watchlist_remove(request):
+    r_listing_title = request.POST["watchlist_remove"]
+    r_listing = listing.objects.get(title=r_listing_title)
+    r_listing_pk = r_listing.pk
+    watchlist_entries.objects.filter(w_listing=r_listing_pk).delete()
+    return HttpResponseRedirect(reverse("watchlist"))
 
 

@@ -13,4 +13,15 @@
         {% endfor %}
     </ul>
 
+    <h5>Remove From Watchlist</h5>
+    <form action = "{% url 'watchlist_remove' %}" method="POST">
+        {% csrf_token %}
+        <select name="watchlist_remove">
+            {% for listing in listings %} 
+                <option value="{{ listing.title }}"> {{ listing.title }} </option> 
+            {% endfor %}
+        </select>
+        <input type="submit">
+    </form>
+
 {% endblock %}

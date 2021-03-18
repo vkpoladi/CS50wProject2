@@ -19,7 +19,7 @@ class listing(models.Model):
     image_url = models.URLField(blank=True)
     starting_bid_price = models.DecimalField(max_digits=10,decimal_places=2)
     post_date = models.DateTimeField()
-    category = models.CharField(max_length=64, blank=True)
+    category = models.CharField(max_length=64)
     status = models.CharField(max_length=6)
 
     def __str__(self):
