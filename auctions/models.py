@@ -55,4 +55,5 @@ class watchlist_entries(models.Model):
         return f"Listing {self.w_listing} is on {self.w_username}'s watchlist"
 
 
+
     

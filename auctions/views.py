@@ -132,9 +132,12 @@ def listing_page(request, listing_pk):
     else:
         current_bid_message = ""
 
+    comments = listing_entry.comments.all()
+
     return render(request, "auctions/listing_page.html", {
         "listing": listing_entry,
-        "current_bid_message": current_bid_message 
+        "current_bid_message": current_bid_message,
+         "comments": comments
         #"category": listing_category
 
     })
@@ -252,7 +255,16 @@ def bidding(request):
     }) 
 
 
-
+def comment_add(request):
+    c_listing_pk = request.POST["c_listing"]
+    c_listing = listing.objects.get(pk=c_listing_pk)
+    comment_date = datetime.datetime.now()
+    c_comment = request.POST["c_comment"]
+    username = request.user.username
+    comment_entry = comment(listing=c_listing, comment_date=comment_date, comment=c_comment, username=username)
+    comment_entry.save()
+        
+    return HttpResponseRedirect(reverse("listing_page", args=(c_listing_pk,)))
 
 
 def categories(request):
