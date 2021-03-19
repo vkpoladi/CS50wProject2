@@ -250,5 +250,25 @@ def bidding(request):
         "current_bid_message": current_bid_message,
         "message": "Bid successfully placed."
     }) 
+
+
+
+
+
+def categories(request):
+    categories = listing.objects.values('category')
+    distinct_categories = set(val for dic in categories for val in dic.values())
+
+
+    return render(request, "auctions/categories.html", {
+        "categories": distinct_categories
+    })
+
+def category_page(request, category):
+    listings = listing.objects.filter(category=category)
+
+    return render(request, "auctions/category_page.html", {
+        "listings": listings
+    })
     
 
