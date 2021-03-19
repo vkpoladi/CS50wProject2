@@ -129,14 +129,17 @@ def listing_page(request, listing_pk):
 
     if current_bid != None:
         current_bid_message = f"Current leading bid is {current_bid_price} by {current_bid.username}"
+        bid_winner = current_bid.username
     else:
         current_bid_message = ""
-
+        bid_winner = "None"
+        
     comments = listing_entry.comments.all()
 
     return render(request, "auctions/listing_page.html", {
         "listing": listing_entry,
         "current_bid_message": current_bid_message,
+        "bid_winner": bid_winner,
          "comments": comments
         #"category": listing_category
 
@@ -283,4 +286,12 @@ def category_page(request, category):
         "listings": listings
     })
     
+def close_listing(request):
+    cl_listing_pk = request.POST["listing"]
+    cl_listing = listing.objects.get(pk=cl_listing_pk)
+    cl_listing.status = "closed"
+    cl_listing.save()
+
+    return HttpResponseRedirect(reverse("listing_page", args=(cl_listing_pk,)))
+
 

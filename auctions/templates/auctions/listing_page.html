@@ -16,8 +16,24 @@
     <div>
         Starting Bid: {{ listing.starting_bid_price }}
 
-        {{ current_bid_message }}
+        {% if listing.status == "open"%}
+            {{ current_bid_message }}
+        {% elif bid_winner != "None"%} 
+            Auction winner is {{ bid_winner }}
+        {% else %}
+            Auction closed without winner
+        {% endif %}
 
+    </div>
+
+    <div>
+        {% if user.username == listing.username and listing.status != "closed"%}
+            <form action= "{% url 'close_listing' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="listing" value= {{ listing.pk }}>
+                <input type="submit" name="close_auction" value="Close Auction">
+            </form>
+        {% endif %}
     </div>
 
     <div>
@@ -31,22 +47,27 @@
     </div>
 
     <div>
-        <form action="{% url 'watchlist' %}", method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="add_listing" value={{ listing.pk }}>
-            <input type="submit" name="add_to_watchlist" value="Add to Watchlist">
-        </form>
+        {% if listing.status == "open"%}
+            <form action="{% url 'watchlist' %}", method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="add_listing" value={{ listing.pk }}>
+                <input type="submit" name="add_to_watchlist" value="Add to Watchlist">
+            </form>
+        {% endif %}
     </div>
 
     <div>
-        <form action="{% url 'bidding' %}", method="POST">
-            {% csrf_token %}
-            <label>Bid</label>
-            <input type="number" name="bid_amount" min="0" max="99999999.99" value="0">
-            <input type="hidden" name="bid_listing" value="{{ listing.title }}">
-            <input type="submit">
-            <h10>Max: $99,999,999.99; Two decimal places required.</h10>
-        </form>
+        {% if listing.status == "open"%}
+            <form action="{% url 'bidding' %}", method="POST">
+                {% csrf_token %}
+                <label>Bid</label>
+                <input type="number" name="bid_amount" min="0" max="99999999.99" value="0">
+                <input type="hidden" name="bid_listing" value="{{ listing.title }}">
+                <input type="submit">
+                <h10>Max: $99,999,999.99; Two decimal places required.</h10>
+            </form>
+        {% endif %}
+
     </div>
 
     <div>
